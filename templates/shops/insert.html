@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Add Shop — Business Blastar{% endblock %}
+{% block topbar_title %}Add Shop{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a href="{{ url_for('shops') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to Shops
+    </a>
+    <h1 class="page-title">Add New Shop</h1>
+    <p class="page-subtitle">Fill in the details below. A unique SHP ID will be assigned automatically.</p>
+</section>
+
+<div class="form-wrapper">
+    <form method="POST" action="{{ url_for('shops_insert') }}" enctype="multipart/form-data" class="form-card">
+
+        <!-- Logo -->
+        <div class="form-group">
+            <label class="form-label">Shop Logo</label>
+            <div class="logo-dropzone" id="logoDropzone">
+                <input type="file" name="logo" id="logoInput" accept="image/*" hidden />
+                <div class="dropzone-content" id="dropzoneContent">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Click or drag &amp; drop to upload logo</span>
+                    <small>PNG, JPG, SVG, WebP</small>
+                </div>
+                <img id="logoPreview" class="logo-preview" alt="Logo preview" />
+            </div>
+        </div>
+
+        <!-- Name + Category -->
+        <div class="form-section-title">Shop Information</div>
+        <div class="form-row">
+            <div class="form-group form-group--grow">
+                <label for="name" class="form-label">Shop Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" class="form-input" placeholder="e.g. Sunrise General Store"
+                    required />
+            </div>
+            <div class="form-group">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" name="category" class="form-input form-select">
+                    <option value="">Select category…</option>
+                    <option value="Grocery">Grocery</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Pharmacy">Pharmacy</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="Bakery">Bakery</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Stationery">Stationery</option>
+                    <option value="Mobile & Accessories">Mobile &amp; Accessories</option>
+                    <option value="Restaurant">Restaurant</option>
+                    <option value="Salon & Beauty">Salon &amp; Beauty</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Emails -->
+        <div class="form-group">
+            <label class="form-label">Email Addresses</label>
+            <div class="multi-field" id="emailsGroup">
+                <div class="multi-field-row">
+                    <input type="email" name="emails[]" class="form-input" placeholder="e.g. shop@example.com" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)"
+                        style="display:none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <button type="button" class="btn-add-field"
+                onclick="addField('emailsGroup', 'email', 'emails[]', 'e.g. orders@shop.com')">
+                <i class="fa-solid fa-plus"></i> Add Another Email
+            </button>
+        </div>
+
+        <!-- Contacts -->
+        <div class="form-group">
+            <label class="form-label">Contact Numbers</label>
+            <div class="multi-field" id="contactsGroup">
+                <div class="multi-field-row">
+                    <input type="text" name="contacts[]" class="form-input" placeholder="e.g. +91 98765 43210" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)"
+                        style="display:none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <button type="button" class="btn-add-field"
+                onclick="addField('contactsGroup', 'text', 'contacts[]', 'e.g. +91 12345 67890')">
+                <i class="fa-solid fa-plus"></i> Add Another Contact
+            </button>
+        </div>
+
+        <!-- Website + Location -->
+        <div class="form-row">
+            <div class="form-group form-group--grow">
+                <label for="website" class="form-label">Website</label>
+                <input type="url" id="website" name="website" class="form-input"
+                    placeholder="e.g. https://myshop.com" />
+            </div>
+            <div class="form-group form-group--grow">
+                <label for="location" class="form-label">Location / Address</label>
+                <input type="text" id="location" name="location" class="form-input"
+                    placeholder="e.g. Shop No. 5, Market Road" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full"
+            style="background:linear-gradient(135deg,#8b5cf6,#ec4899)">
+            <i class="fa-solid fa-store"></i> Add Shop
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dropzone = document.getElementById('logoDropzone');
+    const fileInput = document.getElementById('logoInput');
+    const preview = document.getElementById('logoPreview');
+    const content = document.getElementById('dropzoneContent');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault(); dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; showPreview(e.dataTransfer.files[0]); }
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+
+    function showPreview(file) {
+        const reader = new FileReader();
+        reader.onload = e => { preview.src = e.target.result; preview.classList.add('visible'); content.classList.add('hidden'); };
+        reader.readAsDataURL(file);
+    }
+
+    function addField(groupId, type, name, placeholder) {
+        const group = document.getElementById(groupId);
+        const row = document.createElement('div');
+        row.className = 'multi-field-row';
+        row.innerHTML = `
+            <input type="${type}" name="${name}" class="form-input" placeholder="${placeholder}" />
+            <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>`;
+        group.appendChild(row);
+        updateRemoveButtons(group);
+        row.querySelector('input').focus();
+    }
+
+    function removeField(btn) {
+        const row = btn.closest('.multi-field-row');
+        const group = row.parentElement;
+        row.remove();
+        updateRemoveButtons(group);
+    }
+
+    function updateRemoveButtons(group) {
+        const rows = group.querySelectorAll('.multi-field-row');
+        rows.forEach(r => {
+            const btn = r.querySelector('.btn-remove-field');
+            btn.style.display = rows.length > 1 ? 'flex' : 'none';
+        });
+    }
+</script>
+{% endblock %}

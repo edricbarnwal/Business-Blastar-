@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Update {{ shop.name }} — Business Blastar{% endblock %}
+{% block topbar_title %}Update Shop{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a href="{{ url_for('shop_detail', shp_id=shop.shop_id) }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to {{ shop.name }}
+    </a>
+    <h1 class="page-title">Update Shop</h1>
+    <p class="page-subtitle">Editing <strong>{{ shop.shop_id }}</strong> — {{ shop.name }}</p>
+</section>
+
+<div class="form-wrapper">
+    <form method="POST" action="{{ url_for('shop_update', shp_id=shop.shop_id) }}" enctype="multipart/form-data"
+        class="form-card">
+
+        <!-- Logo -->
+        <div class="form-group">
+            <label class="form-label">Shop Logo</label>
+            <div class="logo-dropzone" id="logoDropzone">
+                <input type="file" name="logo" id="logoInput" accept="image/*" hidden />
+                <div class="dropzone-content {% if shop.logo %}hidden{% endif %}" id="dropzoneContent">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Click or drag &amp; drop to upload a new logo</span>
+                    <small>PNG, JPG, SVG, WebP</small>
+                </div>
+                <img id="logoPreview" class="logo-preview {% if shop.logo %}visible{% endif %}"
+                    src="{% if shop.logo %}{{ url_for('serve_image', filename=shop.logo) }}{% endif %}"
+                    alt="Logo preview" />
+            </div>
+            {% if shop.logo %}<small class="form-hint">Upload a new image to replace the current logo.</small>{% endif
+            %}
+        </div>
+
+        <!-- Name + Category -->
+        <div class="form-section-title">Shop Information</div>
+        <div class="form-row">
+            <div class="form-group form-group--grow">
+                <label for="name" class="form-label">Shop Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" class="form-input" value="{{ shop.name }}" required />
+            </div>
+            <div class="form-group">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" name="category" class="form-input form-select">
+                    <option value="">Select category…</option>
+                    {% set cats =
+                    ['Grocery','Electronics','Clothing','Pharmacy','Hardware','Bakery','Furniture','Stationery','Mobile
+                    & Accessories','Restaurant','Salon & Beauty','Other'] %}
+                    {% for c in cats %}
+                    <option value="{{ c }}" {% if shop.category==c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Emails -->
+        <div class="form-group">
+            <label class="form-label">Email Addresses</label>
+            <div class="multi-field" id="emailsGroup">
+                {% if shop.emails %}
+                {% for em in shop.emails %}
+                <div class="multi-field-row">
+                    <input type="email" name="emails[]" class="form-input" value="{{ em }}" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)" {% if
+                        shop.emails | length <=1 %}style="display:none" {% endif %}>
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="multi-field-row">
+                    <input type="email" name="emails[]" class="form-input" placeholder="e.g. shop@example.com" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)"
+                        style="display:none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <button type="button" class="btn-add-field"
+                onclick="addField('emailsGroup','email','emails[]','e.g. orders@shop.com')">
+                <i class="fa-solid fa-plus"></i> Add Another Email
+            </button>
+        </div>
+
+        <!-- Contacts -->
+        <div class="form-group">
+            <label class="form-label">Contact Numbers</label>
+            <div class="multi-field" id="contactsGroup">
+                {% if shop.contacts %}
+                {% for ct in shop.contacts %}
+                <div class="multi-field-row">
+                    <input type="text" name="contacts[]" class="form-input" value="{{ ct }}" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)" {% if
+                        shop.contacts | length <=1 %}style="display:none" {% endif %}>
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="multi-field-row">
+                    <input type="text" name="contacts[]" class="form-input" placeholder="e.g. +91 98765 43210" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)"
+                        style="display:none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <button type="button" class="btn-add-field"
+                onclick="addField('contactsGroup','text','contacts[]','e.g. +91 12345 67890')">
+                <i class="fa-solid fa-plus"></i> Add Another Contact
+            </button>
+        </div>
+
+        <!-- Website + Location -->
+        <div class="form-row">
+            <div class="form-group form-group--grow">
+                <label for="website" class="form-label">Website</label>
+                <input type="url" id="website" name="website" class="form-input" value="{{ shop.website or '' }}" />
+            </div>
+            <div class="form-group form-group--grow">
+                <label for="location" class="form-label">Location / Address</label>
+                <input type="text" id="location" name="location" class="form-input" value="{{ shop.location or '' }}" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full"
+            style="background:linear-gradient(135deg,#8b5cf6,#ec4899)">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dropzone = document.getElementById('logoDropzone');
+    const fileInput = document.getElementById('logoInput');
+    const preview = document.getElementById('logoPreview');
+    const content = document.getElementById('dropzoneContent');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault(); dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; showPreview(e.dataTransfer.files[0]); }
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+
+    function showPreview(file) {
+        const reader = new FileReader();
+        reader.onload = e => { preview.src = e.target.result; preview.classList.add('visible'); content.classList.add('hidden'); };
+        reader.readAsDataURL(file);
+    }
+
+    function addField(groupId, type, name, placeholder) {
+        const group = document.getElementById(groupId);
+        const row = document.createElement('div');
+        row.className = 'multi-field-row';
+        row.innerHTML = `
+            <input type="${type}" name="${name}" class="form-input" placeholder="${placeholder}" />
+            <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>`;
+        group.appendChild(row);
+        updateRemoveButtons(group);
+        row.querySelector('input').focus();
+    }
+
+    function removeField(btn) {
+        const row = btn.closest('.multi-field-row');
+        const group = row.parentElement;
+        row.remove();
+        updateRemoveButtons(group);
+    }
+
+    function updateRemoveButtons(group) {
+        const rows = group.querySelectorAll('.multi-field-row');
+        rows.forEach(r => {
+            const btn = r.querySelector('.btn-remove-field');
+            btn.style.display = rows.length > 1 ? 'flex' : 'none';
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Shops — Business Blastar{% endblock %}
+{% block topbar_title %}Shops{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">Shops</h1>
+            <p class="page-subtitle">{{ shops | length }} shop{{ 's' if shops | length != 1 }} registered</p>
+        </div>
+        <a href="{{ url_for('shops_insert') }}" class="btn btn--primary">
+            <i class="fa-solid fa-plus"></i> Add Shop
+        </a>
+    </div>
+</section>
+
+<!-- Search -->
+<div class="filter-bar">
+    <form method="GET" action="{{ url_for('shops') }}" class="search-wrap">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by name, location, email, ID…"
+                class="search-input" oninput="this.form.submit()" />
+        </div>
+        {% if query %}
+        <a href="{{ url_for('shops') }}" class="btn btn--ghost">
+            <i class="fa-solid fa-xmark"></i> Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+{% if shops %}
+<div class="card-grid">
+    {% for shop in shops %}
+    <div class="biz-card shop-card" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+        <div class="biz-card-top-strip" style="background: linear-gradient(90deg,#8b5cf6,#ec4899)"></div>
+        <div class="biz-card-body">
+            <div class="biz-card-header-row">
+                <div class="biz-card-logo">
+                    {% if shop.logo %}
+                    <img src="{{ url_for('serve_image', filename=shop.logo) }}" alt="{{ shop.name }} logo" />
+                    {% else %}
+                    <div class="logo-placeholder"
+                        style="background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(236,72,153,0.2));color:#c4b5fd">
+                        <span>{{ shop.name[0] | upper }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="biz-card-info">
+                    <span class="shop-id-badge">{{ shop.shop_id }}</span>
+                    {% if shop.category %}<span class="shop-category-badge">{{ shop.category }}</span>{% endif %}
+                    <h2 class="biz-card-name" title="{{ shop.name }}">{{ shop.name }}</h2>
+                </div>
+            </div>
+
+            <div class="biz-card-contacts">
+                {% if shop.emails %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-envelope" style="color:#c4b5fd"></i>
+                    <div class="email-list">
+                        {% for em in shop.emails %}
+                        <a href="mailto:{{ em }}">{{ em }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-envelope" style="color:#c4b5fd"></i>
+                    <span class="biz-detail-empty">No email on file</span>
+                </div>
+                {% endif %}
+
+                {% if shop.location %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-location-dot" style="color:#c4b5fd"></i>
+                    <span>{{ shop.location }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="biz-card-actions">
+            <a href="{{ url_for('shop_detail', shp_id=shop.shop_id) }}" class="biz-card-view" style="color:#c4b5fd">
+                View Shop <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <div class="biz-card-action-btns">
+                <a href="{{ url_for('shop_update', shp_id=shop.shop_id) }}" class="btn-icon btn-icon--edit"
+                    title="Edit">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <form method="POST" action="{{ url_for('shop_delete', shp_id=shop.shop_id) }}"
+                    onsubmit="return confirm('Delete {{ shop.name }}?')">
+                    <button type="submit" class="btn-icon btn-icon--danger" title="Delete">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon"><i class="fa-solid fa-store-slash"></i></div>
+    <h2>No shops found</h2>
+    {% if query %}
+    <p>No results for "<strong>{{ query }}</strong>". Try a different search.</p>
+    <a href="{{ url_for('shops') }}" class="btn btn--outline">Clear Search</a>
+    {% else %}
+    <p>Get started by adding your first shop.</p>
+    <a href="{{ url_for('shops_insert') }}" class="btn btn--primary"><i class="fa-solid fa-plus"></i> Add Shop</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

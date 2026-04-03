@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Home — Business Blastar{% endblock %}
+{% block topbar_title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-logo">
+        <img src="{{ url_for('serve_image', filename='logo.svg') }}" alt="Business Blastar Logo"
+            onerror="this.style.display='none'" />
+    </div>
+    <h1 class="hero-title">Business Blastar</h1>
+    <p class="hero-subtitle">Your centralized hub to manage, track and grow all your valuable business contacts and
+        shops.</p>
+
+    <div class="hero-stats">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
+            <div class="stat-info">
+                <span class="stat-number">{{ total_biz }}</span>
+                <span class="stat-label">Businesses</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon shops"><i class="fa-solid fa-store"></i></div>
+            <div class="stat-info">
+                <span class="stat-number">{{ total_shops }}</span>
+                <span class="stat-label">Shops</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-actions">
+        <a href="{{ url_for('directory') }}" class="btn btn--primary btn--lg">
+            <i class="fa-solid fa-building"></i> View Directory
+        </a>
+        <a href="{{ url_for('shops') }}" class="btn btn--outline btn--lg">
+            <i class="fa-solid fa-store"></i> View Shops
+        </a>
+        <a href="{{ url_for('insert') }}" class="btn btn--outline btn--lg">
+            <i class="fa-solid fa-plus"></i> Add Business
+        </a>
+    </div>
+</section>
+{% endblock %}

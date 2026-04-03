@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}{{ biz.name }} — Business Blastar{% endblock %}
+{% block topbar_title %}Business Profile{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a href="{{ url_for('directory') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to Directory
+    </a>
+</section>
+
+<div class="detail-page">
+    <!-- Hero -->
+    <div class="detail-hero">
+        <div class="detail-logo">
+            {% if biz.logo %}
+            <img src="{{ url_for('serve_image', filename=biz.logo) }}" alt="{{ biz.name }} logo" />
+            {% else %}
+            <div class="logo-placeholder logo-placeholder--lg"><span>{{ biz.name[0] | upper }}</span></div>
+            {% endif %}
+        </div>
+        <div class="detail-hero-info">
+            <div class="detail-badges">
+                <span class="biz-id-badge">{{ biz.business_id }}</span>
+                {% if biz.type %}<span class="biz-type-badge">{{ biz.type }}</span>{% endif %}
+            </div>
+            <h1 class="detail-name">{{ biz.name }}</h1>
+            {% if biz.location %}
+            <p class="detail-location"><i class="fa-solid fa-location-dot"></i> {{ biz.location }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="detail-grid">
+        {% if biz.emails %}
+        <div class="detail-item detail-item--full">
+            <div class="detail-item-icon"><i class="fa-solid fa-envelope"></i></div>
+            <div>
+                <span class="detail-item-label">Email{{ 's' if biz.emails | length > 1 }}</span>
+                {% for em in biz.emails %}
+                <a href="mailto:{{ em }}" class="detail-item-value detail-link">{{ em }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if biz.contacts %}
+        <div class="detail-item">
+            <div class="detail-item-icon"><i class="fa-solid fa-phone"></i></div>
+            <div>
+                <span class="detail-item-label">Contact{{ 's' if biz.contacts | length > 1 }}</span>
+                {% for ct in biz.contacts %}
+                <span class="detail-item-value">{{ ct }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if biz.website %}
+        <div class="detail-item">
+            <div class="detail-item-icon"><i class="fa-solid fa-globe"></i></div>
+            <div>
+                <span class="detail-item-label">Website</span>
+                <a href="{{ biz.website if biz.website.startswith('http') else 'https://' + biz.website }}"
+                    target="_blank" rel="noopener" class="detail-item-value detail-link">
+                    {{ biz.website | replace('https://','') | replace('http://','') }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if biz.created_at %}
+        <div class="detail-item">
+            <div class="detail-item-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+            <div>
+                <span class="detail-item-label">Added On</span>
+                <span class="detail-item-value">{{ biz.created_at[:10] }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if biz.updated_at %}
+        <div class="detail-item">
+            <div class="detail-item-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+                <span class="detail-item-label">Last Updated</span>
+                <span class="detail-item-value">{{ biz.updated_at[:10] }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if biz.person and biz.person.name %}
+        <div class="detail-item detail-item--full">
+            <div class="detail-item-icon"><i class="fa-solid fa-user-tie"></i></div>
+            <div style="flex:1">
+                <span class="detail-item-label">Contact Person</span>
+                <div class="person-detail-row">
+                    <div class="person-detail-avatar">
+                        {% if biz.person.image %}
+                        <img src="{{ url_for('serve_image', filename=biz.person.image) }}"
+                            alt="{{ biz.person.name }}" />
+                        {% else %}
+                        <span class="person-avatar-placeholder person-avatar-placeholder--lg">{{ biz.person.name[0] |
+                            upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="person-detail-info">
+                        <span class="person-detail-name">{{ biz.person.name }}</span>
+                        {% if biz.person.title %}<span class="person-detail-title">{{ biz.person.title }}</span>{% endif
+                        %}
+                        {% if biz.person.email %}
+                        <a href="mailto:{{ biz.person.email }}" class="person-detail-email">
+                            <i class="fa-solid fa-envelope"></i> {{ biz.person.email }}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div class="detail-actions">
+        <a href="{{ url_for('update_business', bsd_id=biz.business_id) }}" class="btn btn--primary">
+            <i class="fa-solid fa-pen-to-square"></i> Edit Business
+        </a>
+        <form method="POST" action="{{ url_for('delete_business', bsd_id=biz.business_id) }}"
+            onsubmit="return confirm('Delete {{ biz.name }}?')" style="display:inline">
+            <button type="submit" class="btn btn--danger">
+                <i class="fa-solid fa-trash-can"></i> Delete
+            </button>
+        </form>
+    </div>
+    
+    <hr style="margin: 3rem 0; border: none; border-top: 1px solid #e5e7eb;" />
+
+    <div class="connected-people-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.5rem; color: #111827; margin: 0;">Connected People</h2>
+            <button type="button" class="btn btn--primary" onclick="document.getElementById('addPersonForm').style.display='block'; this.style.display='none';">
+                <i class="fa-solid fa-user-plus"></i> Add Person
+            </button>
+        </div>
+        
+        <div id="addPersonForm" style="display: none; background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">Add New Person</h3>
+                <button type="button" class="btn-icon" style="color:#6b7280; border:none; background:transparent; cursor:pointer;" onclick="document.getElementById('addPersonForm').style.display='none'; document.querySelector('.connected-people-section .btn--primary').style.display='inline-flex';">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form method="POST" action="{{ url_for('add_person', bsd_id=biz.business_id) }}" enctype="multipart/form-data">
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" name="person_name" class="form-control" required placeholder="Jane Doe" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" name="person_title" class="form-control" placeholder="Marketing Manager" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="person_email" class="form-control" placeholder="jane@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="person_contact" class="form-control" placeholder="+1 234 567 890" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">LinkedIn Profile URL</label>
+                        <input type="url" name="person_linkedin" class="form-control" placeholder="https://linkedin.com/in/janedoe" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Profile Image</label>
+                        <input type="file" name="person_image" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp" />
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn--primary"><i class="fa-solid fa-save"></i> Save Person</button>
+                </div>
+            </form>
+        </div>
+
+        {% if people %}
+        <div class="card-grid">
+            {% for p in people %}
+            <div class="biz-card">
+                <div class="biz-card-body">
+                    <div class="person-detail-row" style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="person-detail-avatar">
+                            {% if p.image %}
+                            <img src="{{ url_for('serve_image', filename=p.image) }}" alt="{{ p.name }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />
+                            {% else %}
+                            <span class="person-avatar-placeholder" style="width: 50px; height: 50px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#eee; font-weight: bold; font-size: 1.2rem; color: #4b5563;">{{ p.name[0] | upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="person-info" style="flex:1;">
+                            <h3 style="margin:0; font-size: 1.1rem; color: #1f2937;">{{ p.name }}</h3>
+                            {% if p.title %}<p style="margin:0; font-size: 0.9rem; color: #6b7280;">{{ p.title }}</p>{% endif %}
+                        </div>
+                    </div>
+        
+                    <div class="biz-card-contacts" style="margin-top: 1rem;">
+                        {% if p.email %}
+                        <div class="biz-detail">
+                            <i class="fa-solid fa-envelope"></i>
+                            <a href="mailto:{{ p.email }}">{{ p.email }}</a>
+                        </div>
+                        {% endif %}
+        
+                        {% if p.contact %}
+                        <div class="biz-detail">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>{{ p.contact }}</span>
+                        </div>
+                        {% endif %}
+        
+                        {% if p.linkedin %}
+                        <div class="biz-detail">
+                            <i class="fa-brands fa-linkedin"></i>
+                            <a href="{{ p.linkedin if p.linkedin.startswith('http') else 'https://' + p.linkedin }}" target="_blank">LinkedIn</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="biz-card-actions">
+                    <div style="flex:1"></div>
+                    <form method="POST" action="{{ url_for('delete_person', per_id=p.person_id) }}" onsubmit="return confirm('Remove {{ p.name }} from this business?')">
+                        <button type="submit" class="btn-icon btn-icon--danger" title="Remove Person">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: #6b7280; text-align: center; padding: 2rem 0; background: #fff; border-radius: 12px; border: 1px dashed #d1d5db;">No people connected to this business yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

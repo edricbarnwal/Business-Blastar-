@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block title %}Update {{ biz.name }} — Business Blastar{% endblock %}
+{% block topbar_title %}Update Business{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a href="{{ url_for('business_detail', bsd_id=biz.business_id) }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to {{ biz.name }}
+    </a>
+    <h1 class="page-title">Update Business</h1>
+    <p class="page-subtitle">Editing <strong>{{ biz.business_id }}</strong> — {{ biz.name }}</p>
+</section>
+
+<div class="form-wrapper">
+    <form method="POST" action="{{ url_for('update_business', bsd_id=biz.business_id) }}" enctype="multipart/form-data"
+        class="form-card" id="updateForm">
+
+        <!-- Logo -->
+        <div class="form-group">
+            <label class="form-label">Business Logo</label>
+            <div class="logo-dropzone" id="logoDropzone">
+                <input type="file" name="logo" id="logoInput" accept="image/*" hidden />
+                <div class="dropzone-content {% if biz.logo %}hidden{% endif %}" id="dropzoneContent">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Click or drag &amp; drop to upload a new logo</span>
+                    <small>PNG, JPG, SVG, WebP</small>
+                </div>
+                <img id="logoPreview" class="logo-preview {% if biz.logo %}visible{% endif %}"
+                    src="{% if biz.logo %}{{ url_for('serve_image', filename=biz.logo) }}{% endif %}"
+                    alt="Logo preview" />
+            </div>
+            {% if biz.logo %}
+            <small class="form-hint">Upload a new image to replace the current logo, or leave as-is.</small>
+            {% endif %}
+        </div>
+
+        <!-- Name + Type -->
+        <div class="form-section-title">Business Information</div>
+        <div class="form-row">
+            <div class="form-group form-group--grow">
+                <label for="name" class="form-label">Company Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" class="form-input" value="{{ biz.name }}" required />
+            </div>
+            <div class="form-group">
+                <label for="type" class="form-label">Type</label>
+                <select id="type" name="type" class="form-input form-select">
+                    <option value="">Select type…</option>
+                    {% set types = ['Manufacturer','Supplier','Distributor','Retailer','Service
+                    Provider','Wholesaler','Exporter','Importer','Freelancer','Other'] %}
+                    {% for t in types %}
+                    <option value="{{ t }}" {% if biz.type==t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Multiple Emails -->
+        <div class="form-group">
+            <label class="form-label">Email Addresses</label>
+            <div class="multi-field" id="emailsGroup">
+                {% if biz.emails %}
+                {% for em in biz.emails %}
+                <div class="multi-field-row">
+                    <input type="email" name="emails[]" class="form-input" value="{{ em }}" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)" {% if
+                        biz.emails | length <=1 %}style="display:none" {% endif %}>
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="multi-field-row">
+                    <input type="email" name="emails[]" class="form-input" placeholder="e.g. hello@company.com" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)"
+                        style="display:none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <button type="button" class="btn-add-field"
+                onclick="addField('emailsGroup', 'email', 'emails[]', 'e.g. info@company.com')">
+                <i class="fa-solid fa-plus"></i> Add Another Email
+            </button>
+        </div>
+
+        <!-- Multiple Contacts -->
+        <div class="form-group">
+            <label class="form-label">Contact Numbers</label>
+            <div class="multi-field" id="contactsGroup">
+                {% if biz.contacts %}
+                {% for ct in biz.contacts %}
+                <div class="multi-field-row">
+                    <input type="text" name="contacts[]" class="form-input" value="{{ ct }}" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)" {% if
+                        biz.contacts | length <=1 %}style="display:none" {% endif %}>
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="multi-field-row">
+                    <input type="text" name="contacts[]" class="form-input" placeholder="e.g. +91 98765 43210" />
+                    <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)"
+                        style="display:none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <button type="button" class="btn-add-field"
+                onclick="addField('contactsGroup', 'text', 'contacts[]', 'e.g. +91 12345 67890')">
+                <i class="fa-solid fa-plus"></i> Add Another Contact
+            </button>
+        </div>
+
+        <!-- Website + Location -->
+        <div class="form-row">
+            <div class="form-group form-group--grow">
+                <label for="website" class="form-label">Website</label>
+                <input type="url" id="website" name="website" class="form-input" value="{{ biz.website or '' }}" />
+            </div>
+            <div class="form-group form-group--grow">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" id="location" name="location" class="form-input" value="{{ biz.location or '' }}" />
+            </div>
+        </div>
+
+        <!-- Contact Person -->
+        <fieldset class="form-fieldset">
+            <legend class="form-fieldset-legend"><i class="fa-solid fa-user-tie"></i> Contact Person</legend>
+
+            <div class="form-row form-row--person">
+                <div class="form-group person-avatar-upload">
+                    <label class="form-label">Photo</label>
+                    <div class="person-dropzone" id="personDropzone">
+                        <input type="file" name="person_image" id="personImageInput" accept="image/*" hidden />
+                        <div class="person-dropzone-content {% if biz.person and biz.person.image %}hidden{% endif %}"
+                            id="personDropzoneContent">
+                            <i class="fa-solid fa-camera"></i>
+                        </div>
+                        <img id="personImagePreview"
+                            class="person-preview {% if biz.person and biz.person.image %}visible{% endif %}"
+                            src="{% if biz.person and biz.person.image %}{{ url_for('serve_image', filename=biz.person.image) }}{% endif %}"
+                            alt="Person preview" />
+                    </div>
+                </div>
+                <div class="form-group form-group--grow">
+                    <label for="person_name" class="form-label">Full Name</label>
+                    <input type="text" id="person_name" name="person_name" class="form-input"
+                        value="{{ biz.person.name if biz.person else '' }}" placeholder="e.g. John Doe" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-group--grow">
+                    <label for="person_title" class="form-label">Professional Title</label>
+                    <input type="text" id="person_title" name="person_title" class="form-input"
+                        value="{{ biz.person.title if biz.person else '' }}" placeholder="e.g. Manager" />
+                </div>
+                <div class="form-group form-group--grow">
+                    <label for="person_email" class="form-label">Email</label>
+                    <input type="email" id="person_email" name="person_email" class="form-input"
+                        value="{{ biz.person.email if biz.person else '' }}" placeholder="e.g. john@acme.com" />
+                </div>
+            </div>
+        </fieldset>
+
+        <button type="submit" class="btn btn--primary btn--full">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    /* Logo Dropzone */
+    const dropzone = document.getElementById('logoDropzone');
+    const fileInput = document.getElementById('logoInput');
+    const preview = document.getElementById('logoPreview');
+    const content = document.getElementById('dropzoneContent');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault(); dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; showPreview(e.dataTransfer.files[0]); }
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+
+    function showPreview(file) {
+        const reader = new FileReader();
+        reader.onload = e => { preview.src = e.target.result; preview.classList.add('visible'); content.classList.add('hidden'); };
+        reader.readAsDataURL(file);
+    }
+
+    /* Person Dropzone */
+    const personDZ = document.getElementById('personDropzone');
+    const personInput = document.getElementById('personImageInput');
+    const personPreview = document.getElementById('personImagePreview');
+    const personContent = document.getElementById('personDropzoneContent');
+
+    personDZ.addEventListener('click', () => personInput.click());
+    personDZ.addEventListener('dragover', e => { e.preventDefault(); personDZ.classList.add('dragover'); });
+    personDZ.addEventListener('dragleave', () => personDZ.classList.remove('dragover'));
+    personDZ.addEventListener('drop', e => {
+        e.preventDefault(); personDZ.classList.remove('dragover');
+        if (e.dataTransfer.files.length) { personInput.files = e.dataTransfer.files; showPersonPreview(e.dataTransfer.files[0]); }
+    });
+    personInput.addEventListener('change', () => { if (personInput.files.length) showPersonPreview(personInput.files[0]); });
+
+    function showPersonPreview(file) {
+        const reader = new FileReader();
+        reader.onload = e => { personPreview.src = e.target.result; personPreview.classList.add('visible'); personContent.classList.add('hidden'); };
+        reader.readAsDataURL(file);
+    }
+
+    /* Multi-field */
+    function addField(groupId, type, name, placeholder) {
+        const group = document.getElementById(groupId);
+        const row = document.createElement('div');
+        row.className = 'multi-field-row';
+        row.innerHTML = `
+            <input type="${type}" name="${name}" class="form-input" placeholder="${placeholder}" />
+            <button type="button" class="btn-remove-field" title="Remove" onclick="removeField(this)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>`;
+        group.appendChild(row);
+        updateRemoveButtons(group);
+        row.querySelector('input').focus();
+    }
+
+    function removeField(btn) {
+        const row = btn.closest('.multi-field-row');
+        const group = row.parentElement;
+        row.remove();
+        updateRemoveButtons(group);
+    }
+
+    function updateRemoveButtons(group) {
+        const rows = group.querySelectorAll('.multi-field-row');
+        rows.forEach(r => {
+            const btn = r.querySelector('.btn-remove-field');
+            btn.style.display = rows.length > 1 ? 'flex' : 'none';
+        });
+    }
+</script>
+{% endblock %}

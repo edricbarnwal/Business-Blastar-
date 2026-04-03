@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Directory — Business Blastar{% endblock %}
+{% block topbar_title %}Business Directory{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">Business Directory</h1>
+            <p class="page-subtitle">{{ businesses | length }} business{{ 'es' if businesses | length != 1 }} registered
+            </p>
+        </div>
+        <a href="{{ url_for('insert') }}" class="btn btn--primary">
+            <i class="fa-solid fa-plus"></i> Add Business
+        </a>
+    </div>
+</section>
+
+<!-- Search -->
+<div class="filter-bar">
+    <form method="GET" action="{{ url_for('directory') }}" class="search-wrap">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by name, email, contact, ID…"
+                class="search-input" oninput="this.form.submit()" />
+        </div>
+        {% if query %}
+        <a href="{{ url_for('directory') }}" class="btn btn--ghost">
+            <i class="fa-solid fa-xmark"></i> Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+{% if businesses %}
+<div class="card-grid">
+    {% for biz in businesses %}
+    <div class="biz-card" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+        <div class="biz-card-top-strip"></div>
+        <div class="biz-card-body">
+            <!-- Logo + Basic Info -->
+            <div class="biz-card-header-row">
+                <div class="biz-card-logo">
+                    {% if biz.logo %}
+                    <img src="{{ url_for('serve_image', filename=biz.logo) }}" alt="{{ biz.name }} logo" />
+                    {% else %}
+                    <div class="logo-placeholder"><span>{{ biz.name[0] | upper }}</span></div>
+                    {% endif %}
+                </div>
+                <div class="biz-card-info">
+                    <span class="biz-id-badge">{{ biz.business_id }}</span>
+                    <h2 class="biz-card-name" title="{{ biz.name }}">{{ biz.name }}</h2>
+                </div>
+            </div>
+
+            <!-- Emails -->
+            <div class="biz-card-contacts">
+                {% if biz.emails %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-envelope"></i>
+                    <div class="email-list">
+                        {% for em in biz.emails %}
+                        <a href="mailto:{{ em }}">{{ em }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span class="biz-detail-empty">No email on file</span>
+                </div>
+                {% endif %}
+
+                {% if biz.contacts %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>{{ biz.contacts[0] }}{% if biz.contacts|length > 1 %}<span class="biz-detail-more">+{{
+                            biz.contacts|length - 1 }}</span>{% endif %}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Person strip -->
+        {% if biz.person and biz.person.name %}
+        <div class="person-strip">
+            <div class="person-avatar">
+                {% if biz.person.image %}
+                <img src="{{ url_for('serve_image', filename=biz.person.image) }}" alt="{{ biz.person.name }}" />
+                {% else %}
+                <span class="person-avatar-placeholder">{{ biz.person.name[0] | upper }}</span>
+                {% endif %}
+            </div>
+            <div class="person-info">
+                <span class="person-name">{{ biz.person.name }}</span>
+                {% if biz.person.title %}<span class="person-title">{{ biz.person.title }}</span>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="biz-card-actions">
+            <a href="{{ url_for('business_detail', bsd_id=biz.business_id) }}" class="biz-card-view">
+                View Profile <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <div class="biz-card-action-btns">
+                <a href="{{ url_for('update_business', bsd_id=biz.business_id) }}" class="btn-icon btn-icon--edit"
+                    title="Edit">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <form method="POST" action="{{ url_for('delete_business', bsd_id=biz.business_id) }}"
+                    onsubmit="return confirm('Delete {{ biz.name }}?')">
+                    <button type="submit" class="btn-icon btn-icon--danger" title="Delete">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon"><i class="fa-solid fa-building-circle-xmark"></i></div>
+    <h2>No businesses found</h2>
+    {% if query %}
+    <p>No results for "<strong>{{ query }}</strong>". Try a different search.</p>
+    <a href="{{ url_for('directory') }}" class="btn btn--outline">Clear Search</a>
+    {% else %}
+    <p>Get started by adding your first business record.</p>
+    <a href="{{ url_for('insert') }}" class="btn btn--primary"><i class="fa-solid fa-plus"></i> Add Business</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}People Directory — Business Blastar{% endblock %}
+{% block topbar_title %}People Directory{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1 class="page-title">People Directory</h1>
+            <p class="page-subtitle">{{ people | length }} person{{ 's' if people | length != 1 }} registered
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Search -->
+<div class="filter-bar">
+    <form method="GET" action="{{ url_for('people_directory') }}" class="search-wrap">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by name, email, contact, company…"
+                class="search-input" oninput="this.form.submit()" />
+        </div>
+        {% if query %}
+        <a href="{{ url_for('people_directory') }}" class="btn btn--ghost">
+            <i class="fa-solid fa-xmark"></i> Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+{% if people %}
+<div class="card-grid">
+    {% for p in people %}
+    <div class="biz-card" style="animation-delay: {{ loop.index0 * 0.05 }}s; min-height: unset; flex-direction: column;">
+        <div class="biz-card-top-strip" style="background: linear-gradient(135deg, #10b981, #059669);"></div>
+        <div class="biz-card-body" style="flex: 1; padding-bottom: 0;">
+            
+            <div class="person-detail-row" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                <div class="person-detail-avatar">
+                    {% if p.image %}
+                    <img src="{{ url_for('serve_image', filename=p.image) }}" alt="{{ p.name }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />
+                    {% else %}
+                    <span class="person-avatar-placeholder" style="width: 50px; height: 50px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#eee; font-weight: bold; font-size: 1.2rem; color: #4b5563;">{{ p.name[0] | upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="person-info" style="flex:1;">
+                    <h3 style="margin:0; font-size: 1.1rem; color: #1f2937;">{{ p.name }}</h3>
+                    {% if p.title %}<p style="margin:0; font-size: 0.9rem; color: #6b7280;">{{ p.title }}</p>{% endif %}
+                </div>
+            </div>
+
+            <!-- Contacts -->
+            <div class="biz-card-contacts" style="margin-top: 1rem; margin-bottom: 1.5rem;">
+                {% if p.email %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-envelope"></i>
+                    <a href="mailto:{{ p.email }}">{{ p.email }}</a>
+                </div>
+                {% endif %}
+
+                {% if p.contact %}
+                <div class="biz-detail">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>{{ p.contact }}</span>
+                </div>
+                {% endif %}
+
+                {% if p.linkedin %}
+                <div class="biz-detail">
+                    <i class="fa-brands fa-linkedin"></i>
+                    <a href="{{ p.linkedin if p.linkedin.startswith('http') else 'https://' + p.linkedin }}" target="_blank">LinkedIn Profile</a>
+                </div>
+                {% endif %}
+            </div>
+            
+        </div>
+        
+        <div style="background: #f9fafb; padding: 1rem; border-top: 1px solid #e5e7eb; display:flex; align-items:center; justify-content: space-between; gap: 0.75rem;">
+            <div style="display:flex; align-items:center; gap: 0.75rem;">
+                {% if p.business_logo %}
+                <img src="{{ url_for('serve_image', filename=p.business_logo) }}" alt="{{ p.business_name }}" style="width:30px; height:30px; object-fit:contain; border-radius:4px;" />
+                {% else %}
+                <div style="width:30px;height:30px;background:#e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:bold;color:#4b5563;">{{ p.business_name[0]|upper if p.business_name else '?' }}</div>
+                {% endif %}
+                <a href="{{ url_for('business_detail', bsd_id=p.business_id) }}" style="font-size:0.9rem; font-weight:600; color:#374151; text-decoration:none;">{{ p.business_name }}</a>
+            </div>
+            <form method="POST" action="{{ url_for('delete_person', per_id=p.person_id) }}" onsubmit="return confirm('Delete {{ p.name }}?')" style="margin:0;">
+                <button type="submit" class="btn-icon btn-icon--danger" title="Delete Person" style="background:#fee2e2; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:#ef4444; border:none; cursor:pointer;">
+                    <i class="fa-solid fa-trash-can" style="font-size: 0.8rem;"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon"><i class="fa-solid fa-users-slash"></i></div>
+    <h2>No people found</h2>
+    {% if query %}
+    <p>No results for "<strong>{{ query }}</strong>". Try a different search.</p>
+    <a href="{{ url_for('people_directory') }}" class="btn btn--outline">Clear Search</a>
+    {% else %}
+    <p>Get started by adding people directly to a business profile.</p>
+    <a href="{{ url_for('directory') }}" class="btn btn--primary"><i class="fa-solid fa-building"></i> Go to Businesses</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

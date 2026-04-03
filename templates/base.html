@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Business Blastar{% endblock %}</title>
+    <meta name="description" content="Business Blastar — Manage and track your business contacts effortlessly." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+
+<body>
+    <!-- ─── Sidebar ─── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">⚡</span>
+            <span class="brand-text">Blastar</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('index') }}" class="sidebar-link {% if request.endpoint == 'index' %}active{% endif %}">
+                <i class="fa-solid fa-house"></i><span>Home</span>
+            </a>
+
+            <span class="nav-section-label">Businesses</span>
+            <a href="{{ url_for('directory') }}"
+                class="sidebar-link {% if request.endpoint in ['directory','business_detail','update_business'] %}active{% endif %}">
+                <i class="fa-solid fa-building"></i><span>Directory</span>
+            </a>
+            <a href="{{ url_for('insert') }}"
+                class="sidebar-link {% if request.endpoint == 'insert' %}active{% endif %}">
+                <i class="fa-solid fa-plus"></i><span>Add Business</span>
+            </a>
+
+            <span class="nav-section-label">People</span>
+            <a href="{{ url_for('people_directory') }}"
+                class="sidebar-link {% if request.endpoint == 'people_directory' %}active{% endif %}">
+                <i class="fa-solid fa-users"></i><span>Directory</span>
+            </a>
+
+            <span class="nav-section-label">Shops</span>
+            <a href="{{ url_for('shops') }}"
+                class="sidebar-link {% if request.endpoint in ['shops','shop_detail','shop_update'] %}active{% endif %}">
+                <i class="fa-solid fa-store"></i><span>Shops</span>
+            </a>
+            <a href="{{ url_for('shops_insert') }}"
+                class="sidebar-link {% if request.endpoint == 'shops_insert' %}active{% endif %}">
+                <i class="fa-solid fa-cart-plus"></i><span>Add Shop</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <small>&copy; 2026 Business Blastar</small>
+        </div>
+    </aside>
+
+    <!-- ─── Main Area ─── -->
+    <div class="main-area">
+        <header class="topbar">
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <span class="topbar-title">{% block topbar_title %}Business Blastar{% endblock %}</span>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash flash--{{ category }}">
+                {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+                {% else %}<i class="fa-solid fa-circle-exclamation"></i>{% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('visible');
+        });
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('visible');
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

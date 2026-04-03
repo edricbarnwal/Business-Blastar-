@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ shop.name }} — Business Blastar{% endblock %}
+{% block topbar_title %}Shop Profile{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a href="{{ url_for('shops') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to Shops
+    </a>
+</section>
+
+<div class="detail-page">
+    <!-- Hero -->
+    <div class="detail-hero" style="--hero-accent: linear-gradient(90deg,#8b5cf6,#ec4899)">
+        <style>
+            .detail-hero::before {
+                background: linear-gradient(90deg, #8b5cf6, #ec4899) !important;
+            }
+        </style>
+        <div class="detail-logo">
+            {% if shop.logo %}
+            <img src="{{ url_for('serve_image', filename=shop.logo) }}" alt="{{ shop.name }} logo" />
+            {% else %}
+            <div class="logo-placeholder logo-placeholder--lg"
+                style="background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(236,72,153,0.25));color:#c4b5fd">
+                <span>{{ shop.name[0] | upper }}</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="detail-hero-info">
+            <div class="detail-badges">
+                <span class="shop-id-badge">{{ shop.shop_id }}</span>
+                {% if shop.category %}<span class="shop-category-badge">{{ shop.category }}</span>{% endif %}
+            </div>
+            <h1 class="detail-name">{{ shop.name }}</h1>
+            {% if shop.location %}
+            <p class="detail-location"><i class="fa-solid fa-location-dot"></i> {{ shop.location }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="detail-grid">
+        {% if shop.emails %}
+        <div class="detail-item detail-item--full">
+            <div class="detail-item-icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd"><i
+                    class="fa-solid fa-envelope"></i></div>
+            <div>
+                <span class="detail-item-label">Email{{ 's' if shop.emails | length > 1 }}</span>
+                {% for em in shop.emails %}
+                <a href="mailto:{{ em }}" class="detail-item-value detail-link">{{ em }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if shop.contacts %}
+        <div class="detail-item">
+            <div class="detail-item-icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd"><i
+                    class="fa-solid fa-phone"></i></div>
+            <div>
+                <span class="detail-item-label">Contact{{ 's' if shop.contacts | length > 1 }}</span>
+                {% for ct in shop.contacts %}
+                <span class="detail-item-value">{{ ct }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if shop.website %}
+        <div class="detail-item">
+            <div class="detail-item-icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd"><i
+                    class="fa-solid fa-globe"></i></div>
+            <div>
+                <span class="detail-item-label">Website</span>
+                <a href="{{ shop.website if shop.website.startswith('http') else 'https://' + shop.website }}"
+                    target="_blank" rel="noopener" class="detail-item-value detail-link">
+                    {{ shop.website | replace('https://','') | replace('http://','') }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if shop.created_at %}
+        <div class="detail-item">
+            <div class="detail-item-icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd"><i
+                    class="fa-solid fa-calendar-plus"></i></div>
+            <div>
+                <span class="detail-item-label">Added On</span>
+                <span class="detail-item-value">{{ shop.created_at[:10] }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if shop.updated_at %}
+        <div class="detail-item">
+            <div class="detail-item-icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd"><i
+                    class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+                <span class="detail-item-label">Last Updated</span>
+                <span class="detail-item-value">{{ shop.updated_at[:10] }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div class="detail-actions">
+        <a href="{{ url_for('shop_update', shp_id=shop.shop_id) }}" class="btn btn--primary"
+            style="background:linear-gradient(135deg,#8b5cf6,#ec4899)">
+            <i class="fa-solid fa-pen-to-square"></i> Edit Shop
+        </a>
+        <form method="POST" action="{{ url_for('shop_delete', shp_id=shop.shop_id) }}"
+            onsubmit="return confirm('Delete {{ shop.name }}?')" style="display:inline">
+            <button type="submit" class="btn btn--danger">
+                <i class="fa-solid fa-trash-can"></i> Delete
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
